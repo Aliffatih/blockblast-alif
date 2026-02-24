@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, RotateCcw, Play, Volume2, VolumeX, Sparkles, LayoutGrid, Pause, X, LogOut } from 'lucide-react';
+import { Trophy, RotateCcw, Play, Volume2, VolumeX, Sparkles, LayoutGrid, Pause, X, LogOut, Maximize2, Minimize2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { 
   GRID_SIZE, 
@@ -47,6 +47,7 @@ export default function App() {
   const [previewPos, setPreviewPos] = useState<{ x: number, y: number, isValid: boolean } | null>(null);
   const [combo, setCombo] = useState(0);
   const [showCombo, setShowCombo] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
   const gameOverMusicRef = useRef<HTMLAudioElement | null>(null);
@@ -169,6 +170,30 @@ export default function App() {
 
   const resetGame = () => {
     setGameState('START_MENU');
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    }
+  };
+
+  const handleExit = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Fallback for standalone apps or when no history
+      setGameState('START_MENU');
+      alert("Gunakan tombol Home di HP Anda untuk keluar sepenuhnya.");
+    }
   };
 
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent, block: BlockType, index: number) => {
@@ -410,15 +435,27 @@ export default function App() {
                   MAIN SEKARANG
                 </motion.button>
 
-                <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => window.close()}
-                  className="menu-button menu-button-secondary"
-                >
-                  <X size={24} />
-                  EXIT GAME
-                </motion.button>
+                <div className="grid grid-cols-2 gap-4">
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={toggleFullscreen}
+                    className="menu-button menu-button-secondary py-4 text-base"
+                  >
+                    {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+                    {isFullscreen ? 'NORMAL' : 'FULLSCREEN'}
+                  </motion.button>
+
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleExit}
+                    className="menu-button menu-button-secondary py-4 text-base"
+                  >
+                    <X size={20} />
+                    EXIT
+                  </motion.button>
+                </div>
                 
                 <div className="flex gap-4">
                   <div className="flex-1 p-4 glass-panel flex flex-col items-center justify-center">
